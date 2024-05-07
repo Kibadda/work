@@ -1,58 +1,70 @@
-use serde::{Deserialize, Serialize};
-use std::env::var;
+use crate::{cli, file, slot, structs};
 
-static BASE_URL: &str = "https://timekeeping-reloaded.in.cortex-media.de/api/";
+static BASE_URL: &str = "http://timekeeping-reloaded.in.cortex-media.de/api/";
 
-#[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct Day {
-    date: String,
-    start1: String,
-    end1: String,
-    start2: String,
-    end2: String,
+fn request(endpoint: &str, overrides: Option<[structs::Data; 1]>) -> Result<(), String> {
+    match reqwest::blocking::Client::new()
+        .post(BASE_URL.to_owned() + endpoint)
+        .json(&structs::Payload {
+            token: std::env::var("WORK_TOKEN").expect("missing token"),
+            overrides,
+        })
+        .send()
+    {
+        Ok(response) => match response.json::<structs::Response>() {
+            Ok(json) => match json.code {
+                200 => {
+                    if let Err(err) = file::write(&json.result) {
+                        return Err(err.to_string());
+                    }
+                    if let Err(err) = file::print() {
+                        return Err(err.to_string());
+                    }
+
+                    Ok(())
+                }
+                _ => Err(format!("reponse code: {}", json.code)),
+            },
+            Err(err) => Err(err.to_string()),
+        },
+        Err(err) => Err(err.to_string()),
+    }
 }
 
-#[derive(Serialize)]
-struct Payload {
-    token: String,
-    overrides: Option<[Data; 1]>,
-}
-
-#[derive(Serialize)]
-struct Data {
-    key: String,
-    value: String,
-}
-
-fn request(endpoint: &str, data: Option<Data>) -> Day {
-    let token = var("WORK_TOKEN").expect("missing token");
-
-    let payload = Payload {
-        token,
-        overrides: data.map(|data| [data]),
-    };
-
-    let url = BASE_URL.to_owned() + endpoint;
-
-    let client = reqwest::blocking::Client::new();
-    let response = client.post(url).json(&payload).send().unwrap();
-
-    response.json().unwrap()
-}
-
-pub fn today() -> Day {
+pub fn show() -> Result<(), String> {
     request("today", None)
 }
 
-pub fn enter(identifier: String, time: Option<String>) -> Day {
+pub fn track(time: &cli::Time) -> Result<(), String> {
     request(
         "enter",
-        Some(Data {
-            key: identifier,
-            value: match time {
-                Some(time) => time,
-                None => "now".to_owned(),
+        Some([structs::Data {
+            key: match slot::missing() {
+                Some(slot) => slot,
+                None => return Err("all slots are already set. use update instead".to_string()),
             },
-        }),
+            value: time.to_owned().value,
+        }]),
+    )
+}
+
+pub fn update(time: &cli::Time, slot: &cli::Slot) -> Result<(), String> {
+    request(
+        "enter",
+        Some([structs::Data {
+            key: match slot.to_owned().value {
+                Some(slot) => {
+                    if slot.is_empty() {
+                        return Err("no slots are set. use track instead".to_string());
+                    }
+
+                    slot
+                }
+                None => {
+                    return Err("invalid slot".to_string());
+                }
+            },
+            value: time.to_owned().value,
+        }]),
     )
 }

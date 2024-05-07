@@ -1,51 +1,16 @@
 mod api;
+mod cli;
+mod file;
+mod slot;
+mod structs;
 
-use clap::{Parser, Subcommand};
-use std::process::ExitCode;
+use clap::Parser;
 
-#[derive(Subcommand)]
-enum Action {
-    Show,
-
-    Track {
-        #[arg(short, long, value_name = "TIME")]
-        time: Option<String>,
-    },
-
-    Update {
-        #[arg(short, long, value_name = "TIME")]
-        time: Option<String>,
-
-        #[arg(short, long, value_name = "SLOT")]
-        slot: Option<String>,
-    },
-}
-
-#[derive(Parser)]
-struct Cli {
-    #[command(subcommand)]
-    action: Option<Action>,
-}
-
-fn main() -> ExitCode {
-    let cli = Cli::parse();
-
-    match &cli.action {
-        Some(Action::Show) => {
-            let day = api::today();
-
-            println!("{:?}", day);
-        }
-        Some(Action::Track { time }) => {
-            let day = api::enter("start1".to_owned(), time.to_owned());
-
-            println!("{:?}", day);
-        }
-        Some(Action::Update { time, slot }) => {
-            println!("update");
-        }
-        None => {}
+fn main() -> Result<(), String> {
+    match &cli::Cli::parse().action {
+        Some(cli::Action::Show) => api::show(),
+        Some(cli::Action::Track { time }) => api::track(time),
+        Some(cli::Action::Update { time, slot }) => api::update(time, slot),
+        None => Ok(()),
     }
-
-    ExitCode::SUCCESS
 }
