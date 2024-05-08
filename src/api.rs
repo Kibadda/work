@@ -50,8 +50,8 @@ pub fn update(time: &cli::Time, slot: &cli::Slot) -> Result<(), structs::Error> 
         "enter",
         Some([structs::Data {
             key: match slot.is_empty() {
-                true => slot,
-                false => {
+                false => slot,
+                true => {
                     return Err(structs::Error {
                         message: "no slots are set. use track instead".to_string(),
                     })

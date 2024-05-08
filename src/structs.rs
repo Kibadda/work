@@ -6,7 +6,7 @@ pub struct Response {
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Day {
-    pub date: String,
+    pub date: Option<String>,
     pub start1: Option<String>,
     pub end1: Option<String>,
     pub start2: Option<String>,

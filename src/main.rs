@@ -6,7 +6,7 @@ mod structs;
 
 use clap::Parser;
 
-fn main() -> Result<(), String> {
+fn main() -> Result<(), structs::Error> {
     match &cli::Cli::parse().action {
         Some(cli::Action::Show) => api::show(),
         Some(cli::Action::Track { time }) => api::track(time),

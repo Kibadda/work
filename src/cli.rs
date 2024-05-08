@@ -47,7 +47,7 @@ impl std::str::FromStr for Slot {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "start1" || s == "end1" || s == "start2" || s == "end2" {
+        if s.is_empty() || s == "start1" || s == "end1" || s == "start2" || s == "end2" {
             Ok(Self {
                 value: Some(s.to_owned()),
             })

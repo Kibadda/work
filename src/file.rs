@@ -42,7 +42,7 @@ fn move_file(date: String) -> Result<(), std::io::Error> {
     std::fs::rename(
         std::path::Path::new(&path(None)),
         std::path::Path::new(&path(Some(
-            chrono::DateTime::parse_from_str(&date, "%d.%m.%Y")
+            chrono::NaiveDate::parse_from_str(&date, "%d.%m.%Y")
                 .expect("failed date parsing")
                 .format("%Y-%m-%d")
                 .to_string(),
@@ -57,8 +57,13 @@ pub fn check() -> Result<(), std::io::Error> {
 
     let now = chrono::Local::now();
 
-    if day.date != now.format("%d.%m.%Y").to_string() {
-        move_file(day.date)?;
+    let date = match day.date {
+        Some(date) => date,
+        None => now.format("%d.%m.%Y").to_string()
+    };
+
+    if date != now.format("%d.%m.%Y").to_string() {
+        move_file(date)?;
         create()?;
     }
 
