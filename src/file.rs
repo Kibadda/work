@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::io::Write;
 
 use crate::structs;
@@ -96,9 +97,32 @@ pub fn print() -> Result<(), std::io::Error> {
     let day = read()?;
 
     println!(
-        "{}",
-        serde_json::to_string_pretty(&day).expect("failed json encode")
+        "Datum: {}",
+        match day.date {
+            Some(date) => date.green(),
+            None => "n/a".red(),
+        }
     );
+    if let Some(start1) = day.start1 {
+        println!(
+            "{} - {}",
+            start1.blue(),
+            match day.end1 {
+                Some(end1) => end1.green(),
+                None => "n/a".red(),
+            }
+        );
+    }
+    if let Some(start2) = day.start2 {
+        println!(
+            "{} - {}",
+            start2.blue(),
+            match day.end2 {
+                Some(end2) => end2.green(),
+                None => "n/a".red(),
+            }
+        );
+    }
 
     Ok(())
 }
