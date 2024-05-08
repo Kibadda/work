@@ -60,7 +60,7 @@ pub fn check() -> Result<(), std::io::Error> {
 
     let date = match day.date {
         Some(date) => date,
-        None => now.format("%d.%m.%Y").to_string()
+        None => now.format("%d.%m.%Y").to_string(),
     };
 
     if date != now.format("%d.%m.%Y").to_string() {
