@@ -1,10 +1,8 @@
 use crate::{cli, file, slot, structs};
 
-static BASE_URL: &str = "http://timekeeping-reloaded.in.cortex-media.de/api/";
-
 fn request(endpoint: &str, overrides: Option<[structs::Data; 1]>) -> Result<(), structs::Error> {
     let response = reqwest::blocking::Client::new()
-        .post(BASE_URL.to_owned() + endpoint)
+        .post(std::env::var("WORK_URL").expect("missing url").to_owned() + endpoint)
         .json(&structs::Payload {
             token: std::env::var("WORK_TOKEN").expect("missing token"),
             overrides,
