@@ -3,16 +3,13 @@ use std::io::Write;
 
 use crate::structs;
 
-static DIR: &str = "/home/michael/.local/state/work/";
-static FILE: &str = "times.json";
-
 fn path(name: Option<String>) -> String {
-    let name = match name {
-        Some(name) => name + ".json",
-        None => FILE.to_owned(),
-    };
-
-    DIR.to_owned() + &name
+    std::env::var("WORK_DIR").expect("missing dir").to_owned()
+        + &match name {
+            Some(name) => name,
+            None => "times".to_owned(),
+        }
+        + ".json"
 }
 
 fn exists() -> bool {
