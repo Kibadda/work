@@ -15,10 +15,42 @@ pub struct Day {
 
 impl std::fmt::Display for Day {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use chrono::{Local, NaiveTime};
         use colored::Colorize;
+
+        fn parse_time(s: &Option<String>) -> Option<NaiveTime> {
+            s.as_ref()
+                .and_then(|t| NaiveTime::parse_from_str(t, "%H:%M").ok())
+        }
+
+        let now = Local::now().time();
+
+        let start1 = parse_time(&self.start1);
+        let end1 =
+            parse_time(&self.end1).or_else(|| if start1.is_some() { Some(now) } else { None });
+
+        let start2 = parse_time(&self.start2);
+        let end2 =
+            parse_time(&self.end2).or_else(|| if start2.is_some() { Some(now) } else { None });
+
+        let mut total_secs = 0i64;
+
+        if let (Some(s), Some(e)) = (start1, end1) {
+            total_secs += (e - s).num_seconds();
+        }
+
+        if let (Some(s), Some(e)) = (start2, end2) {
+            total_secs += (e - s).num_seconds();
+        }
+
+        let hours = total_secs / 3600;
+        let minutes = (total_secs % 3600) / 60;
+
+        let time = format!("{:02}:{:02}", hours, minutes);
+
         write!(
             f,
-            "Datum: {}\n{} - {}\n{} - {}",
+            "Datum: {}\n{} - {}\n{} - {}\nZeit: {}",
             match &self.date {
                 Some(date) => date.green(),
                 None => "n/a".red(),
@@ -39,6 +71,7 @@ impl std::fmt::Display for Day {
                 Some(end2) => end2.blue(),
                 None => "n/a".red(),
             },
+            time.yellow(),
         )
     }
 }
