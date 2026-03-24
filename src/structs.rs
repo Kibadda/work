@@ -15,7 +15,7 @@ pub struct Day {
 
 impl std::fmt::Display for Day {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use chrono::{Local, NaiveTime};
+        use chrono::{Local, NaiveTime, Timelike};
         use colored::Colorize;
 
         fn parse_time(s: &Option<String>) -> Option<NaiveTime> {
@@ -46,15 +46,17 @@ impl std::fmt::Display for Day {
         let hours = total_secs / 3600;
         let minutes = (total_secs % 3600) / 60;
 
+        let current = format!("{:02}:{:02}", now.hour(), now.minute());
         let time = format!("{:02}:{:02}", hours, minutes);
 
         write!(
             f,
-            "Datum: {}\n{} - {}\n{} - {}\nZeit: {}",
+            "Datum: {} {}\n{} - {}\n{} - {}\nZeit: {}",
             match &self.date {
                 Some(date) => date.green(),
                 None => "n/a".red(),
             },
+            current.green(),
             match &self.start1 {
                 Some(start1) => start1.blue(),
                 None => "n/a".red(),
